@@ -1,0 +1,87 @@
+/* ---------------------
+   Global Styles
+--------------------- */
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 40px auto;
+    max-width: 900px;
+    background-color: #ffffff;
+    color: #000000;
+    line-height: 1.6;
+}
+
+h1 {
+    font-size: 28px;
+    color: #004aad; /* blue header */
+    margin-bottom: 20px;
+}
+
+p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+/* ---------------------
+   Links / Buttons
+--------------------- */
+a {
+    color: #004aad;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Blue button style for links on Home/Submit */
+.button-link {
+    display: inline-block;
+    background-color: #004aad;
+    color: #ffffff;
+    padding: 8px 16px;
+    margin: 5px 0;
+    border-radius: 5px;
+    transition: background-color 0.2s ease;
+}
+
+.button-link:hover {
+    background-color: #003580;
+}
+
+/* ---------------------
+   Table Styles
+--------------------- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    border: 1px solid #004aad;
+}
+
+th, td {
+    border: 1px solid #004aad;
+    padding: 10px 12px;
+    font-size: 14px;
+    text-align: left;
+}
+
+th {
+    background-color: #004aad;
+    color: #ffffff;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f7ff;
+}
+
+tr:hover {
+    background-color: #e1eaff;
+}
+
+/* ---------------------
+   Footer / Home link
+--------------------- */
+p a {
+    color: #004aad;
+    font-weight: bold;
+}
