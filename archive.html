@@ -2,67 +2,69 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Archive — Prototype Archive</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Archive — Prototype Archive</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 
 <body>
 
-    <h1>Archive</h1>
-    <p>Public list of submitted working prototypes.</p>
-
+  <h1>Archive</h1>
+  <p>Public list of submitted working prototypes.</p>
+  <div class="table-wrapper">
     <table id="prototypeTable">
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Category</th>
-            <th>Link</th>
-        </tr>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Category</th>
+        <th>Link</th>
+      </tr>
     </table>
+  </div>
 
-    <p><a href="index.html">Home</a></p>
+  <p><a href="index.html">Home</a></p>
 
-    <script>
-const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxO1VUamLS7wjknI02XN8NTWMr4EASsELHqe44VTGK4l7kQ-v4ZXZ7JAYMcD_Y1vxMHuTSw50OgLvr/pub?output=csv";
+  <script>
+    const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxO1VUamLS7wjknI02XN8NTWMr4EASsELHqe44VTGK4l7kQ-v4ZXZ7JAYMcD_Y1vxMHuTSw50OgLvr/pub?output=csv";
 
-fetch(sheetURL)
-  .then(res => res.text())
-  .then(text => {
-    const rows = text.trim().split("\n").slice(1);
-    const table = document.getElementById("prototypeTable");
+    fetch(sheetURL)
+      .then(res => res.text())
+      .then(text => {
+        const rows = text.trim().split("\n").slice(1);
+        const table = document.getElementById("prototypeTable");
 
-    rows.forEach(row => {
-      const cols = row.split(",");
+        rows.forEach(row => {
+          const cols = row.split(",");
 
-      // We expect at least 5 columns now
-      if (cols.length < 5) return;
+          // We expect at least 5 columns now
+          if (cols.length < 5) return;
 
-      // Column mapping (IMPORTANT)
-      const timestamp = cols[0].replace(/^"|"$/g, "").trim(); // not displayed
-      const name = cols[1].replace(/^"|"$/g, "").trim();
-      const desc = cols[2].replace(/^"|"$/g, "").trim();
-      const category = cols[3].replace(/^"|"$/g, "").trim();
-      let link = cols[4].replace(/^"|"$/g, "").trim();
+          // Column mapping (IMPORTANT)
+          const timestamp = cols[0].replace(/^"|"$/g, "").trim(); // not displayed
+          const name = cols[1].replace(/^"|"$/g, "").trim();
+          const desc = cols[2].replace(/^"|"$/g, "").trim();
+          const category = cols[3].replace(/^"|"$/g, "").trim();
+          let link = cols[4].replace(/^"|"$/g, "").trim();
 
-      // Fix link if missing https
-      if (!link.startsWith("http")) {
-        link = "https://" + link;
-      }
+          // Fix link if missing https
+          if (!link.startsWith("http")) {
+            link = "https://" + link;
+          }
 
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
         <td>${name}</td>
         <td>${desc}</td>
         <td>${category}</td>
         <td><a href="${link}" target="_blank">Demo</a></td>
       `;
 
-      table.appendChild(tr);
-    });
-  });
-</script>
+          table.appendChild(tr);
+        });
+      });
+  </script>
 
 
 
