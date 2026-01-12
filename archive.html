@@ -14,8 +14,32 @@
   <h1>Archive</h1>
   <p>Public list of submitted working prototypes.</p>
 
+  <div class="archive-controls">
+    <input type="text" id="searchInput" placeholder="Search by name or description...">
+
+    <select id="categoryFilter">
+      <option value="">All Categories</option>
+      <option value="AI/ML">AI/ML</option>
+      <option value="FinTech">FinTech</option>
+      <option value="EdTech">EdTech</option>
+      <option value="Productivity/Tools">Productivity/Tools</option>
+      <option value="HealthTech">HealthTech</option>
+      <option value="Developer Tools">Developer Tools</option>
+      <option value="Data Analytics">Data Analytics</option>
+      <option value="Web Apps">Web Apps</option>
+      <option value="Mobile Apps">Mobile Apps</option>
+      <option value="Automation Bots">Automation Bots</option>
+      <option value="Others/Experimental">Others/Experimental</option>
+    </select>
+  </div>
+
   <div class="table-wrapper">
-    <table id="prototypeTable">
+    <div id="loader" class="loader-container">
+      <div class="spinner"></div>
+      <p>Accessing Archive Records...</p>
+    </div>
+
+    <table id="prototypeTable" style="display: none;">
       <thead>
         <tr>
           <th>Date</th>
@@ -32,46 +56,96 @@
   <p><a href="index.html">Home</a></p>
 
   <script>
-    const sheetURL =
-      "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxO1VUamLS7wjknI02XN8NTWMr4EASsELHqe44VTGK4l7kQ-v4ZXZ7JAYMcD_Y1vxMHuTSw50OgLvr/pub?output=csv";
+    const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxO1VUamLS7wjknI02XN8NTWMr4EASsELHqe44VTGK4l7kQ-v4ZXZ7JAYMcD_Y1vxMHuTSw50OgLvr/pub?output=csv";
 
+    let allPrototypes = []; // Stores our data globally
+
+    const tbody = document.querySelector("#prototypeTable tbody");
+    const searchInput = document.getElementById("searchInput");
+    const categoryFilter = document.getElementById("categoryFilter");
+
+    // 1. Fetch Data
     fetch(sheetURL)
       .then(res => res.text())
       .then(csv => {
         const rows = csv.trim().split("\n").slice(1);
-        const tbody = document.querySelector("#prototypeTable tbody");
 
-        rows.forEach(row => {
-          // Basic CSV-safe split (handles commas inside quotes)
-          const cols = row.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
-          if (!cols || cols.length < 5) return;
+        allPrototypes = rows.map(row => {
+          const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+          if (cols.length < 5) return null;
 
-          const timestampRaw = cols[0].replace(/"/g, "").trim();
-          const name = cols[1].replace(/"/g, "").trim();
-          const desc = cols[2].replace(/"/g, "").trim();
-          const category = cols[3].replace(/"/g, "").trim();
-          let link = cols[4].replace(/"/g, "").trim();
+          const clean = (str) => str ? str.replace(/^"|"$/g, "").trim() : "";
 
-          // Format date (YYYY-MM-DD)
-          const date = new Date(timestampRaw).toISOString().split("T")[0];
+          return {
+            date: new Date(clean(cols[0])).toISOString().split("T")[0],
+            name: clean(cols[1]),
+            desc: clean(cols[2]),
+            category: clean(cols[3]),
+            link: clean(cols[4]).startsWith("http") ? clean(cols[4]) : "https://" + clean(cols[4])
+          };
+        }).filter(item => item !== null);
 
-          if (!link.startsWith("http")) {
-            link = "https://" + link;
-          }
+        // NEW: Hide loader and show table
+        document.getElementById("loader").style.display = "none";
+        document.getElementById("prototypeTable").style.display = "table";
 
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${date}</td>
-            <td>${name}</td>
-            <td>${desc}</td>
-            <td>${category}</td>
-            <td><a href="${link}" target="_blank">Demo</a></td>
-          `;
-
-          tbody.appendChild(tr);
-        });
+        renderTable(allPrototypes);
+      })
+      .catch(err => {
+        // Handle errors (e.g., offline or broken link)
+        document.getElementById("loader").innerHTML = "<p style='color:red;'>Failed to load archive. Please refresh.</p>";
       });
+
+    // 2. Render Function
+    function renderTable(data) {
+      tbody.innerHTML = "";
+
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="no-results">No prototypes match your search.</td></tr>';
+        return;
+      }
+
+      data.forEach(item => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+        <td><code style="font-size:12px">${item.date}</code></td>
+        <td><strong>${item.name}</strong></td>
+        <td>${item.desc}</td>
+        <td><span class="metadata">${item.category}</span></td>
+        <td><a href="${item.link}" target="_blank" class="button-link">Try Prototype ↗</a></td>
+      `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 3. Filter Logic
+    function handleFilter() {
+      const searchTerm = searchInput.value.toLowerCase();
+      const selectedCat = categoryFilter.value;
+
+      const filtered = allPrototypes.filter(p => {
+        const matchesSearch = p.name.toLowerCase().includes(searchTerm) ||
+          p.desc.toLowerCase().includes(searchTerm);
+        const matchesCat = selectedCat === "" || p.category === selectedCat;
+
+        return matchesSearch && matchesCat;
+      });
+
+      renderTable(filtered);
+    }
+
+    // Listen for typing and dropdown changes
+    searchInput.addEventListener("input", handleFilter);
+    categoryFilter.addEventListener("change", handleFilter);
   </script>
 
+  <footer>
+    <p class="metadata">
+      © 2026 Prototype Archive. All rights reserved. By <b>Libertà Production</b>
+      This archive is uncurated, unmanaged, and potentially infinite.
+    </p>
+  </footer>
+
 </body>
+
 </html>
