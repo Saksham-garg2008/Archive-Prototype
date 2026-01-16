@@ -14,6 +14,17 @@
   <h1>Archive</h1>
   <p>Public list of submitted working prototypes.</p>
 
+  <!-- LEADERBOARD SECTION -->
+  <h2>🔥 Trending This Week</h2>
+  <div class="leaderboard-wrapper">
+    <div id="leaderboardLoader" class="loader-container" style="display: none;">
+      <div class="spinner"></div>
+      <p>Loading trending prototypes...</p>
+    </div>
+    <div id="leaderboard" class="leaderboard-grid"></div>
+  </div>
+
+  <h2>All Prototypes</h2>
   <div class="archive-controls">
     <input type="text" id="searchInput" placeholder="Search by name or description...">
 
@@ -47,6 +58,9 @@
           <th>Description</th>
           <th>Category</th>
           <th>Link</th>
+          <th>Views</th>
+          <th>Likes</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -63,6 +77,128 @@
     const tbody = document.querySelector("#prototypeTable tbody");
     const searchInput = document.getElementById("searchInput");
     const categoryFilter = document.getElementById("categoryFilter");
+    const leaderboardDiv = document.getElementById("leaderboard");
+
+    // Local storage keys
+    const LIKES_STORAGE_KEY = "prototype_likes";
+    const VIEWS_STORAGE_KEY = "prototype_views";
+
+    // Initialize local storage
+    function initializeStorage() {
+      if (!localStorage.getItem(LIKES_STORAGE_KEY)) {
+        localStorage.setItem(LIKES_STORAGE_KEY, JSON.stringify({}));
+      }
+      if (!localStorage.getItem(VIEWS_STORAGE_KEY)) {
+        localStorage.setItem(VIEWS_STORAGE_KEY, JSON.stringify({}));
+      }
+    }
+
+    // Get likes for a prototype
+    function getLikes(prototypeId) {
+      const likes = JSON.parse(localStorage.getItem(LIKES_STORAGE_KEY)) || {};
+      return likes[prototypeId] || 0;
+    }
+
+    // Get views for a prototype
+    function getViews(prototypeId) {
+      const views = JSON.parse(localStorage.getItem(VIEWS_STORAGE_KEY)) || {};
+      return views[prototypeId] || 0;
+    }
+
+    // Check if user liked a prototype
+    function hasUserLiked(prototypeId) {
+      const likedKey = `liked_${prototypeId}`;
+      return localStorage.getItem(likedKey) === "true";
+    }
+
+    // Toggle like for a prototype
+    function toggleLike(prototypeId, prototypeName) {
+      const likes = JSON.parse(localStorage.getItem(LIKES_STORAGE_KEY)) || {};
+      const likedKey = `liked_${prototypeId}`;
+      const isLiked = hasUserLiked(prototypeId);
+
+      if (isLiked) {
+        // Unlike
+        likes[prototypeId] = Math.max(0, (likes[prototypeId] || 0) - 1);
+        localStorage.removeItem(likedKey);
+      } else {
+        // Like
+        likes[prototypeId] = (likes[prototypeId] || 0) + 1;
+        localStorage.setItem(likedKey, "true");
+      }
+
+      localStorage.setItem(LIKES_STORAGE_KEY, JSON.stringify(likes));
+      renderTable(allPrototypes); // Re-render to update counts
+      updateLeaderboard();
+    }
+
+    // Record a view for a prototype
+    function recordView(prototypeId) {
+      const views = JSON.parse(localStorage.getItem(VIEWS_STORAGE_KEY)) || {};
+      views[prototypeId] = (views[prototypeId] || 0) + 1;
+      localStorage.setItem(VIEWS_STORAGE_KEY, JSON.stringify(views));
+    }
+
+    // Get prototypes from past week
+    function getPrototypesFromPastWeek(prototypes) {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+      return prototypes.filter(p => {
+        const protoDate = new Date(p.date);
+        return protoDate >= oneWeekAgo;
+      });
+    }
+
+    // Update leaderboard
+    function updateLeaderboard() {
+      const weekPrototypes = getPrototypesFromPastWeek(allPrototypes);
+      const scored = weekPrototypes.map(p => {
+        const protoId = `${p.date}_${p.name}`;
+        return {
+          ...p,
+          likes: getLikes(protoId),
+          views: getViews(protoId),
+          score: getLikes(protoId) * 2 + getViews(protoId)
+        };
+      });
+
+      const topPrototypes = scored.sort((a, b) => b.score - a.score).slice(0, 5);
+
+      leaderboardDiv.innerHTML = "";
+
+      if (topPrototypes.length === 0) {
+        leaderboardDiv.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999;">No prototypes published this week yet.</p>';
+        return;
+      }
+
+      topPrototypes.forEach((p, index) => {
+        const protoId = `${p.date}_${p.name}`;
+        const isLiked = hasUserLiked(protoId);
+        const card = document.createElement("div");
+        card.className = "leaderboard-card";
+        card.innerHTML = `
+          <div class="leaderboard-rank">#${index + 1}</div>
+          <h3>${p.name}</h3>
+          <p class="leaderboard-desc">${p.desc}</p>
+          <p class="leaderboard-category">${p.category}</p>
+          <div class="leaderboard-stats">
+            <span>👁️ ${p.views} views</span>
+            <span>❤️ ${p.likes} likes</span>
+          </div>
+          <div class="leaderboard-actions">
+            <a href="${p.link}" target="_blank" class="button-link small">Try ↗</a>
+            <button class="like-button ${isLiked ? 'liked' : ''}" onclick="toggleLike('${protoId}', '${p.name}')">
+              ${isLiked ? '❤️ Unlike' : '🤍 Like'}
+            </button>
+          </div>
+        `;
+        leaderboardDiv.appendChild(card);
+      });
+    }
+
+    // Initialize storage on page load
+    initializeStorage();
 
     // 1. Fetch Data
     fetch(sheetURL)
@@ -85,11 +221,15 @@
           };
         }).filter(item => item !== null);
 
-        // NEW: Hide loader and show table
+        // Sort by date descending (newest first)
+        allPrototypes.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        // Hide loader and show table
         document.getElementById("loader").style.display = "none";
         document.getElementById("prototypeTable").style.display = "table";
 
         renderTable(allPrototypes);
+        updateLeaderboard();
       })
       .catch(err => {
         // Handle errors (e.g., offline or broken link)
@@ -101,11 +241,15 @@
       tbody.innerHTML = "";
 
       if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="no-results">No prototypes match your search.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="no-results">No prototypes match your search.</td></tr>';
         return;
       }
 
       data.forEach(item => {
+        const protoId = `${item.date}_${item.name}`;
+        const likes = getLikes(protoId);
+        const views = getViews(protoId);
+        const isLiked = hasUserLiked(protoId);
         const tr = document.createElement("tr");
         tr.innerHTML = `
         <td><code style="font-size:12px">${item.date}</code></td>
@@ -113,6 +257,9 @@
         <td>${item.desc}</td>
         <td><span class="metadata">${item.category}</span></td>
         <td><a href="${item.link}" target="_blank" class="button-link">Try Prototype ↗</a></td>
+        <td><span class="stat-badge">👁️ ${views}</span></td>
+        <td><span class="stat-badge">❤️ ${likes}</span></td>
+        <td><button class="like-button ${isLiked ? 'liked' : ''}" onclick="toggleLike('${protoId}', '${item.name.replace(/'/g, "\\'")}')">${isLiked ? '❤️ Unlike' : '🤍 Like'}</button></td>
       `;
         tbody.appendChild(tr);
       });

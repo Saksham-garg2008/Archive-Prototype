@@ -187,6 +187,153 @@ small,
     font-style: italic;
 }
 
+/* ---------------------
+   Leaderboard Styles
+--------------------- */
+h2 {
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-size: 22px;
+    font-weight: normal;
+    color: #004aad;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 8px;
+}
+
+.leaderboard-wrapper {
+    margin-bottom: 40px;
+}
+
+.leaderboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.leaderboard-card {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0, 74, 173, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+}
+
+.leaderboard-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 74, 173, 0.15);
+}
+
+.leaderboard-rank {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #004aad;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.leaderboard-card h3 {
+    font-size: 16px;
+    color: #333;
+    margin: 0 0 8px 0;
+    padding-right: 45px;
+}
+
+.leaderboard-desc {
+    font-size: 13px;
+    color: #666;
+    margin: 0 0 8px 0;
+    line-height: 1.4;
+}
+
+.leaderboard-category {
+    font-size: 11px;
+    color: #999;
+    background-color: #f0f0f0;
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 3px;
+    margin-bottom: 10px;
+}
+
+.leaderboard-stats {
+    display: flex;
+    gap: 15px;
+    margin: 10px 0;
+    font-size: 13px;
+    color: #555;
+}
+
+.leaderboard-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.leaderboard-actions .button-link {
+    flex: 1;
+    font-size: 12px;
+    padding: 5px 8px;
+    text-align: center;
+}
+
+.leaderboard-actions .button-link.small {
+    display: inline-block;
+    flex: none;
+}
+
+/* ---------------------
+   Like Button
+--------------------- */
+.like-button {
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    color: #333;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.like-button:hover {
+    background-color: #f5f5f5;
+    border-color: #e74c3c;
+    transform: scale(1.05);
+}
+
+.like-button.liked {
+    background-color: #ffe4e1;
+    border-color: #ff6b6b;
+    color: #c92a2a;
+}
+
+.like-button.liked:hover {
+    background-color: #ffd0d0;
+}
+
+.stat-badge {
+    display: inline-block;
+    background-color: #f0f0f0;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #555;
+}
+
 /* Loader Container */
 .loader-container {
     display: flex;
